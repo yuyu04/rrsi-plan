@@ -78,6 +78,36 @@ export VERTEX_LOCATION=global VERTEXAI_LOCATION=global
 export RRSI_VERTEX_PROJECTS="your-project-id"
 ```
 
+#### Search-role backend
+
+Select the search-role backend with `RRSI_LLM_BACKEND`:
+
+| Value | Authentication |
+|---|---|
+| `vertex` (default) | Vertex AI application-default credentials and `RRSI_VERTEX_PROJECTS` |
+| `anthropic` | `ANTHROPIC_API_KEY` |
+| `claude_cli` | Claude Pro/Max/Team subscription via `claude -p` |
+
+For `claude_cli`, install Claude Code and log in once: run `claude` and `/login`,
+or run `claude setup-token` and set `CLAUDE_CODE_OAUTH_TOKEN` for headless use.
+Set `RRSI_SEARCH_MODEL` to choose the model, `RRSI_CLI_CONCURRENCY` to limit
+parallel calls (default 2), `RRSI_CLI_TIMEOUT` for the per-call timeout (default
+600 seconds), and `RRSI_CLAUDE_BIN` to override the executable (default `claude`).
+
+```bash
+export RRSI_LLM_BACKEND=claude_cli
+python3 -m rrsi.llm
+```
+
+`ANTHROPIC_API_KEY` is stripped from the subprocess so usage bills to the
+subscription. There is no prompt caching: the prefix is concatenated into the
+prompt. `max_tokens` is not enforced; the CLI environment cap errors instead
+of truncating. Subscription rate limits apply, so keep concurrency low.
+
+**Caution:** only the search roles move. The frozen policy model in `domains/*`
+(LiteLLM `policy_model` / `ORCHESTRATOR_MODEL`) is unchanged and still needs
+Vertex or an API key.
+
 ### 2. Run an instance
 
 Every instance follows the same shape:
